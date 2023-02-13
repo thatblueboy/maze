@@ -10,6 +10,7 @@ project(maze_solver)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  gazebo_ros
 )
 
 ## System dependencies are found with CMake's conventions
