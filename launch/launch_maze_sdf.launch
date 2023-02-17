@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>        
-    <include file="$(find maze_solver)/launch/maze.launch">
+     <env name="GAZEBO_MODEL_PATH"
+       value="$(find maze_solver)/models:$(optenv GAZEBO_MODEL_PATH)" />
+
+    <include file="$(find maze_solver)/launch/maze_sdf.launch">
         <arg name="robot_name" value="maze"/>
         <arg name="x" value="0.0" />
         <arg name="y" value="0.0" />
