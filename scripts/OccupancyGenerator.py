@@ -14,7 +14,6 @@ Version: 2/13/14
 import rospy
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from geometry_msgs.msg import Pose, Point, Quaternion
-from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import Image
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
@@ -118,9 +117,10 @@ class Mapper(object):
         """ Start the mapper. """
 
         rospy.init_node('mapper')
-        rospy.loginfo("error")
+    
         self._map = Map()
-        rospy.loginfo("error")
+        self.bridge = CvBridge()
+    
 
         # Setting the queue_size to 1 will prevent the subscriber from
         # buffering scan messages.  This is important because the
@@ -129,8 +129,7 @@ class Mapper(object):
         # and end up processing really old scans.  Better to just drop
         # old scans and always work with the most recent available.
         self.image_sub = rospy.Subscriber("cam/rgb/image_raw",Image,self.callback,queue_size=1)
-        rospy.loginfo("error")
-
+        
         # Latched publishers are used for slow changing topics like
         # maps.  Data will sit on the topic until someone reads it.
         self._map_pub = rospy.Publisher('map', OccupancyGrid, latch=True,queue_size=1)
@@ -143,18 +142,18 @@ class Mapper(object):
     def callback(self, data):
         """ Update the map on every scan callback. """
         try:
-            rospy.loginfo("error")
-            image = self.bridge.imgmsg_to_cv(data, "bgr8")
-            grey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            
+            image = self.bridge.imgmsg_to_cv2(data,"bgr8")
+            # grey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-            blur = cv2.GaussianBlur(grey,(35,35),0)
+            # blur = cv2.GaussianBlur(grey,(35,35),0)
 
 
-            ret,thresh= cv2.threshold(blur,127,255,cv2.THRESH_OTSU)
+            # ret,thresh= cv2.threshold(blur,127,255,cv2.THRESH_OTSU)
 
-            self._map.grid.resize((image.shape[0],image.shape[1]))
-            thresh[thresh == 255] = 100
-            self._map.grid = thresh
+            
+            # thresh[thresh == 255] = 100
+        
 
 
 
@@ -170,12 +169,13 @@ class Mapper(object):
             self.publish_map()
         except :
             rospy.loginfo("error")
+            
             pass
 
 
     def publish_map(self):
         """ Publish the map. """
-        rospy.loginfo("error")
+    
         grid_msg = self._map.to_message()
         self._map_data_pub.publish(grid_msg.info)
         self._map_pub.publish(grid_msg)
@@ -185,5 +185,5 @@ if __name__ == '__main__':
     try:
         m = Mapper()
     except rospy.ROSInterruptException:
-        rospy.loginfo("error")
+       
         pass
