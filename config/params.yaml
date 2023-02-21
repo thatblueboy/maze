@@ -1,0 +1,10 @@
+vKp: 0.05
+vKi: 0.00
+vKd: 0.00
+vdt: 0.0333
+vmax: 0.2
+omegaKp: 0.1
+omegaKi: 0.00
+omegaKd: 0.00
+omegadt: 0.0333
+omegaMax: 2.8

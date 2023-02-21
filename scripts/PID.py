@@ -2,10 +2,10 @@
 import math
 
 import rospy
+import rosparam
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from tf.transformations import euler_from_quaternion
-
 
 class PID():
     '''
@@ -47,9 +47,10 @@ class PID():
         else:
             return self.vmax
 
-class main():
-    def __init__(self):
-        self.points = [(0, 5), (6, 2)]
+class followPath():
+
+    def __init__(self, path):
+        self.points = path
         self.numOfNodes = len(self.points)
         self.x = 0
         self.y = 0
@@ -58,16 +59,17 @@ class main():
         self.linearPIDflag = False
         self.velocity = Twist()
 
-        vKp = 0.1
-        vKi = 0.00
-        vKd = 0.00
-        vdt = 0.0333
-        vmax = 0.2
-        omegaKp = 0.1
-        omegaKi = 0.00
-        omegaKd = 0.00
-        omegadt = 0.0333
-        omegaMax = 2.8
+        vKp = rospy.get_param("vKp")
+        vKi = rospy.get_param("vKi")
+        vKd = rospy.get_param("vKd")
+        vdt = rospy.get_param("vdt")
+        vmax = rospy.get_param("vmax")
+        omegaKp = rospy.get_param("omegaKp")
+        omegaKi = rospy.get_param("omegaKi")
+        omegaKd = rospy.get_param("omegaKd")
+        omegadt = rospy.get_param("omegadt")
+        omegaMax = rospy.get_param("omegaMax")
+
         self.vPID = PID(vKp, vKi, vKd, vmax, vdt)
         self.omegaPID = PID(omegaKp, omegaKi, omegaKd, omegaMax, omegadt)
 
@@ -132,4 +134,5 @@ class main():
         return False
 
 if __name__ == '__main__':
-    main()
+    listOfPath = [(0, 5), (6, 2)]
+    followPath(listOfPath)
