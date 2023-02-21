@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-import rospy
-from geometry_msgs.msg import Twist
-from tf.transformations import euler_from_quaternion
-from nav_msgs.msg import Odometry
-from geometry_msgs.msg import Twist
 import math
 
-class PID(): 
+import rospy
+from geometry_msgs.msg import Twist
+from nav_msgs.msg import Odometry
+from tf.transformations import euler_from_quaternion
+
+
+class PID():
     '''
     single variable PID controller
     initially takes parameters, maximum velocity and timestamp
+
     '''
     def __init__(self, Kp:float, Ki:float, Kd:float, vmax:float, dt:float):
         self.Kp = Kp
@@ -19,7 +21,7 @@ class PID():
         self.dt = dt
         self.err = 0
         self.integral = 0
-        
+
     def reset(self):
         self.err = 0
         self.integral = 0
@@ -33,10 +35,10 @@ class PID():
         derivative = (err - self.err)/self.dt #calculte differential
         # print(derivative)
         return derivative
-    
+
     def findVout(self, err:float):
         '''
-        return new velocity, given displacement 
+        return new velocity, given displacement
         '''
         vout = self.Kp*err + self.Ki*self.integrate(err) + self.Kd*self.differentiate(err)
         self.err = err
@@ -79,15 +81,19 @@ class main():
         self.y = msg.pose.pose.position.y
         rot = msg.pose.pose.orientation
         (roll, pitch, self.theta) = euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
+        print(self.theta)
         x, y = self.points[self.whereTo]
         self.goTo(x, y)
 
     def goTo(self, x, y):
-        theta = math.atan((y - self.y)/(x - self.x))
-        # print("coords are", x, y)
+        theta = math.atan2((y- self.y), (x -self.x))
         if not self.reached(x, y):
             v = 0
             omega = self.omegaPID.findVout(theta - self.theta)
+            print("goal", theta)
+            print("current", self.theta)
+
+            print(theta - self.theta)
             if not self.linearPIDflag:
                 if self.headingRight(x, y):
                     self.linearPIDflag = True
@@ -109,15 +115,13 @@ class main():
        print("publishing", v, omega)
        print(self.whereTo)
        print(self.linearPIDflag)
-    
+
     def dist(self, x1, y1, x2, y2):
         dist = ((x2 - x1)**2+(y2-y1)**2)**0.5
         return dist
 
     def headingRight(self, x, y):
-        theta = math.atan((y - self.y)/(x - self.x))
-        print("theta", theta)
-        print(self.theta)
+        theta = math.atan2(y, x)
         if abs(theta-self.theta) < 0.1:
             return True
         return False
@@ -125,7 +129,7 @@ class main():
     def reached(self, x, y):
         if self.dist(x, y, self.x, self.y) < 0.2:
             return True
-        return False         
+        return False
 
 if __name__ == '__main__':
     main()
