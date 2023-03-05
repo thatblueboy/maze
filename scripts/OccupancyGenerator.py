@@ -92,6 +92,7 @@ class Map(object):
         # log-odds).
         flat_grid = self.grid.reshape((self.grid.size,)) * 100
         grid_msg.data = list(np.round(flat_grid))
+       
         return grid_msg
 
     def set_cell(self, x, y, val):
@@ -118,9 +119,10 @@ class Mapper(object):
         """ Start the mapper. """
 
         rospy.init_node('mapper')
-        rospy.loginfo("error")
+        
         self._map = Map()
-        rospy.loginfo("error")
+        self.bridge = CvBridge()
+       
 
         # Setting the queue_size to 1 will prevent the subscriber from
         # buffering scan messages.  This is important because the
@@ -129,13 +131,13 @@ class Mapper(object):
         # and end up processing really old scans.  Better to just drop
         # old scans and always work with the most recent available.
         self.image_sub = rospy.Subscriber("cam/rgb/image_raw",Image,self.callback,queue_size=1)
-        rospy.loginfo("error")
+        
 
         # Latched publishers are used for slow changing topics like
         # maps.  Data will sit on the topic until someone reads it.
-        self._map_pub = rospy.Publisher('map', OccupancyGrid, latch=True,queue_size=1)
+        self._map_pub = rospy.Publisher('map', OccupancyGrid, latch=False,queue_size=1)
         self._map_data_pub = rospy.Publisher('map_metadata',
-                                             MapMetaData, latch=True,queue_size=1)
+                                             MapMetaData, latch=False,queue_size=1)
 
         rospy.spin()
 
@@ -143,9 +145,8 @@ class Mapper(object):
     def callback(self, data):
         """ Update the map on every scan callback. """
         try:
-            rospy.loginfo("error")
-            image = self.bridge.imgmsg_to_cv(data, "bgr8")
-            grey = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            grey = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
             blur = cv2.GaussianBlur(grey,(35,35),0)
 
@@ -154,6 +155,8 @@ class Mapper(object):
 
             self._map.grid.resize((image.shape[0],image.shape[1]))
             thresh[thresh == 255] = 100
+            self._map.width = len(thresh[0])
+            self._map.height = len(thresh)
             self._map.grid = thresh
 
 
@@ -168,14 +171,13 @@ class Mapper(object):
             # Now that the map is updated, publish it!
             rospy.loginfo("Scan is processed, publishing updated map.")
             self.publish_map()
-        except :
-            rospy.loginfo("error")
+        except Exception as e:
+            rospy.loginfo(e)
             pass
 
 
     def publish_map(self):
         """ Publish the map. """
-        rospy.loginfo("error")
         grid_msg = self._map.to_message()
         self._map_data_pub.publish(grid_msg.info)
         self._map_pub.publish(grid_msg)
