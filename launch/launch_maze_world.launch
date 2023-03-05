@@ -10,7 +10,7 @@
 
         <!-- Spawn the world -->
         <include file="$(find gazebo_ros)/launch/empty_world.launch">
-		<arg name="world_name" value="$(find maze_solver)/worlds/maze_world.world"/>
+		<arg name="world_name" value="$(find maze_solver)/worlds/april_maze_world.world"/>
     	</include>     
 
         <node pkg="gazebo_ros" 

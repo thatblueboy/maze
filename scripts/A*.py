@@ -48,7 +48,7 @@ class PRM:
             xn, yn = listOfNodes.pop(0)
             if self.distance(xn, yn, x, y)==d:
                 return xn, yn   
-                
+                      
     def doesNotIntersect(self, xn, yn, x, y):
         lineA = LineString( [(xn, yn), (x, y)])
         listOfRoads = self.listOfRoads.copy()
