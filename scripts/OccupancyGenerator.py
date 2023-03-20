@@ -146,14 +146,28 @@ class Mapper(object):
         """ Update the map on every scan callback. """
         try:
             image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+
             grey = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
             blur = cv2.GaussianBlur(grey,(35,35),0)
+            
+
 
 
             ret,thresh= cv2.threshold(blur,127,255,cv2.THRESH_OTSU)
+            
+            
+            
 
-            self._map.grid.resize((image.shape[0],image.shape[1]))
+            cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+            cnts = sorted(cnts, key=cv2.contourArea, reverse=True)
+            for c in cnts:
+                x,y,w,h = cv2.boundingRect(c)
+                thresh = thresh[y:y+h, x:x+w]
+                break
+
+            
             thresh[thresh == 255] = 100
             self._map.width = len(thresh[0])
             self._map.height = len(thresh)
