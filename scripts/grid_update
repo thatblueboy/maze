@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+import rospy
+
+obstacles = {"""obs_index:[(topx,topy),(bottomx,bottomy)]"""}
+
+def 
+
+"""
+1) Sub to keyboard input in terminal
+2) update occupancy grid
+3) publish new occupancy grid
+"""
