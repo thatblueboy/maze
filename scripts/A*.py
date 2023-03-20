@@ -225,7 +225,10 @@ while a != n-1 :
     a = dstra.nextNode(n-1)
 
 a = n-1
-while True:
+while True:            r = 150.0 / image.shape[1]
+            dim = (150, int(image.shape[0] * r))
+# perform the actual resizing of the image
+            image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
     b = dstra.viaNode[a]
     dstra.drawLine(a, b)
     a = b
